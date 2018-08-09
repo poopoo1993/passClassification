@@ -1,4 +1,5 @@
 import tensorflow as tf
+from tensorflow.python import debug as tf_debug
 import numpy as np
 
 #define NN
@@ -34,23 +35,30 @@ y = tf.placeholder(tf.float32, [None, 1])
 
 
 #There are two layer
-layer1 = add_layer(x, 2, 10, activation_func = tf.nn.relu)
+layer1 = add_layer(x, 2, 10, activation_func = tf.nn.relu6)
 prediction = add_layer(layer1, 10, 1, activation_func = None)
 
 #loss for train
-loss = tf.reduce_mean(tf.reduce_sum(tf.square(y - prediction),
-									 reduction_indices = [1]))
+loss = tf.losses.mean_squared_error(labels = y, predictions = prediction)
 #train step
-train_step = tf.train.GradientDescentOptimizer(0.1).minimize(loss)
+train_step = tf.train.GradientDescentOptimizer(0.001).minimize(loss)
 
 #initialize the NN
 init = tf.initialize_all_variables()
 sess = tf.Session()
+#this is debug session
+#sess = tf_debug.LocalCLIDebugWrapperSession(sess)
 sess.run(init)
 
-for i in range(1000):
+for i in range(20000):
 	sess.run(train_step, feed_dict = {x:x_data, y:y_data})
 	if i % 50 == 0:
-		print(sess.run(loss, feed_dict = {x:x_data, y:y_data}))
-		
-print(sess.run(prediction, feed_dict = {x:x_data}))
+		sess.run(loss, feed_dict = {x:x_data, y:y_data})
+
+#print result
+pred = sess.run(prediction, feed_dict = {x:x_data})		
+print("input      prediction  real output")
+for i in range(len(pred)):
+	print("[%3d,%3d]  [%5.2f]     [%3d]"
+					 % (x_data[i][0],x_data[i][1],pred[i],y_data[i]))
+
