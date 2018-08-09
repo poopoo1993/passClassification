@@ -24,19 +24,19 @@ y_data = []
 for line in datas:
 	line.strip('\n')
 	temp =  line.split(" ")
-	x_data.append([int(temp[0]), int(temp[1])])
+	x_data.append([int(temp[0]), int(temp[1]), int(temp[0])-60, int(temp[1])-60])
 	y_data.append([int(temp[2])])
 del temp
 x_data = np.array(x_data)
 y_data = np.array(y_data)
 
-x = tf.placeholder(tf.float32, [None, 2])
+x = tf.placeholder(tf.float32, [None, 4])
 y = tf.placeholder(tf.float32, [None, 1])
 
 
 #There are two layer
-layer1 = add_layer(x, 2, 10, activation_func = tf.nn.relu6)
-prediction = add_layer(layer1, 10, 1, activation_func = None)
+layer1 = add_layer(x, 4, 20, activation_func = tf.nn.relu6)
+prediction = add_layer(layer1, 20, 1, activation_func = None)
 
 #loss for train
 loss = tf.losses.mean_squared_error(labels = y, predictions = prediction)
@@ -50,7 +50,7 @@ sess = tf.Session()
 #sess = tf_debug.LocalCLIDebugWrapperSession(sess)
 sess.run(init)
 
-for i in range(20000):
+for i in range(2000):
 	sess.run(train_step, feed_dict = {x:x_data, y:y_data})
 	if i % 50 == 0:
 		sess.run(loss, feed_dict = {x:x_data, y:y_data})
