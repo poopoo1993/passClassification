@@ -24,24 +24,26 @@ y_data = []
 for line in datas:
 	line.strip('\n')
 	temp =  line.split(" ")
-	x_data.append([int(temp[0]), int(temp[1]), int(temp[0])-60, int(temp[1])-60])
+	x_data.append([int(temp[0]), int(temp[1])])
 	y_data.append([int(temp[2])])
 del temp
 x_data = np.array(x_data)
 y_data = np.array(y_data)
 
-x = tf.placeholder(tf.float32, [None, 4])
+fin.close()
+
+x = tf.placeholder(tf.float32, [None, 2])
 y = tf.placeholder(tf.float32, [None, 1])
 
 
 #There are two layer
-layer1 = add_layer(x, 4, 20, activation_func = tf.nn.relu6)
-prediction = add_layer(layer1, 20, 1, activation_func = None)
+layer1 = add_layer(x, 2, 10, activation_func = tf.nn.relu6)
+prediction = add_layer(layer1, 10, 1, activation_func = None)
 
 #loss for train
-loss = tf.losses.mean_squared_error(labels = y, predictions = prediction)
+loss = tf.losses.log_loss(labels = y, predictions = prediction)
 #train step
-train_step = tf.train.GradientDescentOptimizer(0.001).minimize(loss)
+train_step = tf.train.GradientDescentOptimizer(0.01).minimize(loss)
 
 #initialize the NN
 init = tf.initialize_all_variables()
@@ -55,8 +57,24 @@ for i in range(2000):
 	if i % 50 == 0:
 		sess.run(loss, feed_dict = {x:x_data, y:y_data})
 
+
+fin = open('data.txt', 'r')
+datas = fin.readlines()
+x_data = []
+y_data = []
+for line in datas:
+	line.strip('\n')
+	temp =  line.split(" ")
+	x_data.append([int(temp[0]), int(temp[1])])
+	y_data.append([int(temp[2])])
+del temp
+x_data = np.array(x_data)
+y_data = np.array(y_data)
+
 #print result
 pred = sess.run(prediction, feed_dict = {x:x_data})		
+pred = abs(pred)
+pred = (pred - min(pred))/(max(pred)-min(pred))*100
 print("input      prediction  real output")
 for i in range(len(pred)):
 	print("[%3d,%3d]  [%5.2f]     [%3d]"
